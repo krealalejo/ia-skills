@@ -13,6 +13,12 @@ A curated collection of custom AI skills designed to enhance software engineerin
 - **Ticket Support**: Integrates ticket IDs (e.g., Jira, GitHub Issues) into the commit scope.
 - **Character Limit**: Ensures concise messages (max 300 characters).
 
+## 📦 Dependencies
+
+This repository depends on the following tools:
+
+- **[RTK (AI Agent Tooling)](https://github.com/rtk-ai/rtk)**: The underlying framework used by the skills to interact with the environment (git, filesystem, etc.).
+
 ## 🛠️ How to Use This Repository
 
 This repository is designed to be cloned or referenced by AI agents compatible with the **Antigravity Skills** system.
