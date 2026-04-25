@@ -35,7 +35,7 @@ metadata:
 
 ## Workflow
 
-1.  **Diff Analysis**: Run `git diff main...HEAD` (or equivalent) to identify changed files and lines.
+1.  **Diff Analysis**: Run `rtk git diff main...HEAD` (or equivalent) to identify changed files and lines.
 2.  **Implementation Check**: If a task description is provided, verify that the implementation meets the requirements.
 3.  **Heuristic Review**: Apply the criteria listed in "Critical Patterns".
 4.  **Comment Placement**: Insert review comments as block comments (e.g., `/** ... */` for TS/JS) directly in the file above the target line.
