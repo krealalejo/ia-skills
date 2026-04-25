@@ -8,10 +8,17 @@ A curated collection of custom AI skills designed to enhance software engineerin
 **Purpose**: Automates the creation of atomic commits following the [Conventional Commits](https://www.conventionalcommits.org/) standard.
 
 **Key Features**:
-- **English-Only Messages**: Enforces language consistency for professional repositories.
 - **Atomic Commits**: Automatically groups changes logically by module or functionality.
 - **Ticket Support**: Integrates ticket IDs (e.g., Jira, GitHub Issues) into the commit scope.
 - **Character Limit**: Ensures concise messages (max 300 characters).
+
+### 🔍 code-review
+**Purpose**: Performs a comprehensive code review of the current branch against `main`, focusing on TypeScript, best practices, and SOLID principles.
+
+**Key Features**:
+- **Automatic Diff**: Compares implementation with the `main` branch.
+- **In-Line Suggestions**: Adds comments directly above the code with problem descriptions and corrections.
+- **Clean Code & SOLID**: Enforces high-quality architectural standards.
 
 ## 📦 Dependencies
 
