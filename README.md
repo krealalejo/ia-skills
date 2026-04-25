@@ -20,6 +20,15 @@ A curated collection of custom AI skills designed to enhance software engineerin
 - **In-Line Suggestions**: Adds comments directly above the code with problem descriptions and corrections.
 - **Clean Code & SOLID**: Enforces high-quality architectural standards.
 
+### 🔷 typescript-review
+**Purpose**: Specialized review for TypeScript types and advanced patterns.
+
+**Key Features**:
+- **Advanced Patterns**: Enforces function overloads, generics, type predicates, and mapped types.
+- **Exhaustiveness Checking**: Ensures all cases in unions are handled using the `never` type.
+- **Utility Types**: Promotes the use of `Pick`, `Omit`, `Record`, and other built-in utilities.
+- **Flexible Scope**: Supports individual file review or automatic detection via `git status`.
+
 ## 📦 Dependencies
 
 This repository depends on the following tools:
