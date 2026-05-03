@@ -29,6 +29,13 @@ A curated collection of custom AI skills designed to enhance software engineerin
 - **Utility Types**: Promotes the use of `Pick`, `Omit`, `Record`, and other built-in utilities.
 - **Flexible Scope**: Supports individual file review or automatic detection via `git status`.
 
+### 📝 add-readme
+**Purpose**: Creates or updates a README.md file following the `assets/template.md` structure.
+
+**Key Features**:
+- **Standardized Structure**: Enforces a consistent layout (Stack, Quick Start, Commands, Architecture) across all portfolio projects.
+- **Visual Excellence**: Includes support for Mermaid diagrams and architectural descriptions.
+
 ## 📦 Dependencies
 
 This repository depends on the following tools:
