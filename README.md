@@ -44,10 +44,13 @@ This repository depends on the following tools:
 
 ## 🛠️ How to Use This Repository
 
-This repository is designed to be cloned or referenced by AI agents compatible with the **Antigravity Skills** system.
+Install all skills via the [skills.sh](https://www.skills.sh) CLI:
 
-1. **Installation**: Copy the desired skill folder into your local skills directory.
-2. **Configuration**: Ensure the agent has the necessary permissions to execute the commands defined in the `SKILL.md` file.
+```bash
+npx skills add krealalejo/ia-skills
+```
+
+Or install manually by copying the desired skill folder into your local skills directory. Ensure the agent has the necessary permissions to execute the commands defined in the `SKILL.md` file.
 
 ---
 *Developed with ❤️ by krealalejo*
