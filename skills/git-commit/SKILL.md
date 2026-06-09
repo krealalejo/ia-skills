@@ -6,7 +6,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: krealalejo
-  version: "1.1"
+  version: "1.2"
 ---
 
 ## When to Use
@@ -33,14 +33,14 @@ metadata:
 
 1. **Analyze Status**: Run `rtk git status --short` to see all changed files.
 2. **Deep Analysis**: Use `rtk git diff` or `rtk git diff <file>` to understand the changes before grouping.
-3. **Group Changes**: Identify logical units based on file paths and the content analyzed with `rtk`.
-4. **Generate Messages**:
-   - For each group, create a concise English message.
-   - Example: `feat(api): add blog post controller tests`.
-   - Example with ticket: `feat(ITBUILD-01): implement user registration`.
-5. **Commit**:
-   - `rtk git add <files>`
+3. **Group Changes**: Identify logical units based on file paths and the content analyzed with `rtk`. Each group = one future commit. Unrelated modules (e.g., frontend vs backend, config vs feature) MUST be separate groups.
+4. **Generate Messages**: For each group, create a concise English message before committing anything.
+   - Example: `feat(api): add blog post controller tests`
+   - Example with ticket: `feat(ITBUILD-01): implement user registration`
+5. **Commit Each Group Separately** — loop over every group identified in step 3:
+   - `rtk git add <files-in-this-group-only>`
    - `rtk git commit -m "type(scope): message"`
+   - Repeat for the next group. Never batch multiple groups into one commit.
 
 ## Commands
 
