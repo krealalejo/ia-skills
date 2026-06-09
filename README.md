@@ -45,6 +45,17 @@ A curated collection of custom AI skills designed to enhance software engineerin
 - **Branch Summary**: Analyzes the full diff (`main...HEAD`) and synthesizes a single concise sentence.
 - **Fixed Format**: Commit message always follows `summary: <message>` (max 300 characters).
 
+### 🎭 playwright-e2e
+
+**Purpose**: Generates Playwright E2E tests following project conventions — web UI tests (`/playwright-web`) or HTTP API tests (`/playwright-api`).
+
+**Key Features**:
+
+- **Two modes**: `/playwright-web` for browser/UI flows, `/playwright-api` for REST endpoint tests.
+- **Conventions-first**: Enforces `gotoAppReady()`, `data-test-id` selectors, dynamic data (no hardcoded IDs), and proper auth state reuse.
+- **Scenario coverage**: Scaffolds happy path + edge cases (unauthenticated, empty state, 4xx errors) automatically.
+- **Teardown**: Cleans up created API resources in `afterAll` when the endpoint supports it.
+
 ### 📝 add-readme
 
 **Purpose**: Creates or updates a README.md file following the `assets/template.md` structure.
