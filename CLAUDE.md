@@ -34,13 +34,15 @@ metadata:
 
 ## Available skills
 
-| Skill               | Trigger                      | Purpose                                                                                                          |
-| ------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `git-commit`        | `/commit [ticket-id]`        | Atomic conventional commits (`type(scope): msg`, max 300 chars). Always prefixes git commands with `rtk`.        |
-| `code-review`       | `/review [task_description]` | Diffs against `main`, inserts block comments above problematic lines with Affected Lines / Problem / Suggestion. |
-| `typescript-review` | `/typescript [file]`         | Deep TS type review: overloads, generics, discriminated unions, exhaustiveness, utility types.                   |
-| `add-readme`        | `/add-readme [context]`      | Creates/updates README following the template in `skills/add-readme/assets/template.md`.                         |
-| `release-commit`    | `/release-commit`            | Creates empty summary commit (`summary: msg`) with plain-English description of all branch changes vs `main`.    |
+| Skill               | Trigger                           | Purpose                                                                                                          |
+| ------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `git-commit`        | `/commit [ticket-id]`             | Atomic conventional commits (`type(scope): msg`, max 300 chars). Always prefixes git commands with `rtk`.        |
+| `code-review`       | `/review [task_description]`      | Diffs against `main`, inserts block comments above problematic lines with Affected Lines / Problem / Suggestion. |
+| `typescript-review` | `/typescript [file]`              | Deep TS type review: overloads, generics, discriminated unions, exhaustiveness, utility types.                   |
+| `add-readme`        | `/add-readme [context]`           | Creates/updates README following the template in `skills/add-readme/assets/template.md`.                         |
+| `release-commit`    | `/release-commit`                 | Creates empty summary commit (`summary: msg`) with plain-English description of all branch changes vs `main`.    |
+| `playwright-web`    | `/playwright-web [url] [flow]`    | Generates Playwright E2E tests for web UI flows and browser interactions.                                        |
+| `playwright-api`    | `/playwright-api [method] [path]` | Generates Playwright E2E tests for HTTP API endpoints using the request fixture.                                 |
 
 ## README template
 

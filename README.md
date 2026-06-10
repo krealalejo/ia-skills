@@ -45,16 +45,27 @@ A curated collection of custom AI skills designed to enhance software engineerin
 - **Branch Summary**: Analyzes the full diff (`main...HEAD`) and synthesizes a single concise sentence.
 - **Fixed Format**: Commit message always follows `summary: <message>` (max 300 characters).
 
-### 🎭 playwright-e2e
+### 🎭 playwright-web
 
-**Purpose**: Generates Playwright E2E tests following project conventions — web UI tests (`/playwright-web`) or HTTP API tests (`/playwright-api`).
+**Purpose**: Generates Playwright E2E tests for web UI flows and browser interactions.
 
 **Key Features**:
 
-- **Two modes**: `/playwright-web` for browser/UI flows, `/playwright-api` for REST endpoint tests.
+- **Pre-research phase**: Greps `data-test-id` selectors, reads unit tests and store files, identifies async timing anchors and lazy boundaries before writing any test.
 - **Conventions-first**: Enforces `gotoAppReady()`, `data-test-id` selectors, dynamic data (no hardcoded IDs), and proper auth state reuse.
-- **Scenario coverage**: Scaffolds happy path + edge cases (unauthenticated, empty state, 4xx errors) automatically.
-- **Teardown**: Cleans up created API resources in `afterAll` when the endpoint supports it.
+- **Context hints**: Accepts `unit-tests:`, `components:`, `known-selectors:`, `async-anchors:` to target research.
+- **Scenario coverage**: Scaffolds happy path + edge cases not already covered by unit tests.
+
+### 🔌 playwright-api
+
+**Purpose**: Generates Playwright E2E tests for HTTP API endpoints using the `request` fixture.
+
+**Key Features**:
+
+- **No `fetch`/`axios`**: Uses Playwright's `APIRequestContext` exclusively.
+- **Auth setup**: Token/cookie acquired in `beforeAll` and reused across tests.
+- **Scenario coverage**: 200 success, 401 unauthenticated, 400/422 validation, 404 not found.
+- **Teardown**: Cleans up created resources in `afterAll` when the endpoint supports DELETE.
 
 ### 📝 add-readme
 
