@@ -4,6 +4,14 @@ A curated collection of custom AI skills designed to enhance software engineerin
 
 ## 🚀 Included Skills
 
+Two kinds of skill live here:
+
+- **Command skills** — invoked explicitly with a slash command (`/commit`, `/review`).
+- **Reference skills** — passive domain knowledge loaded on demand when the agent
+  enters that domain. No command; they simply apply when relevant.
+
+### ⚙️ Command Skills
+
 ### 🛠️ git-commit
 
 **Purpose**: Automates the creation of atomic commits following the [Conventional Commits](https://www.conventionalcommits.org/) standard.
@@ -75,6 +83,104 @@ A curated collection of custom AI skills designed to enhance software engineerin
 
 - **Standardized Structure**: Enforces a consistent layout (Stack, Quick Start, Commands, Architecture) across all portfolio projects.
 - **Visual Excellence**: Includes support for Mermaid diagrams and architectural descriptions.
+
+## 🧭 Governance Skills
+
+How work is scoped, planned and handed off. These encode process, not syntax.
+
+### 📋 prd-first
+
+**Purpose**: Starts every non-trivial task from a lightweight PRD and forbids the agent from inventing features that are not in scope.
+
+**Key Features**:
+
+- **Four mandatory sections**: Mission, In Scope, Out of Scope, Architecture.
+- **Binding scope**: In Scope is exhaustive — a password-reset flow, caching or a new dependency that is not listed does not get built.
+- **Approval gate**: no code is written while `status: draft`.
+- **Template included**: `assets/PRD.md`.
+
+### 🚦 plan-gate
+
+**Purpose**: Forces a written plan and explicit approval before any change that crosses a risk threshold.
+
+**Key Features**:
+
+- **Clear threshold**: 3+ files, a dependency, a data model, infrastructure, or a cross-boundary rename.
+- **Six required parts**: goal, file list, order, risk, rollback, verification.
+- **Anti-gaming**: splitting one change into sub-threshold edits to dodge the gate is explicitly forbidden.
+
+### 🧠 context-protocol
+
+**Purpose**: The 60% Document & Clear protocol — dump progress to a session file, clear, resume from the file.
+
+**Key Features**:
+
+- **Beats auto-compaction**: a summary loses decisions; a session file keeps them.
+- **Structured handoff**: Done, In progress (file:line), Next steps, Decisions, Gotchas, Open questions.
+- **Deliberate timing**: act at 60%, not at 95% under pressure.
+
+### 🕸️ agent-pipeline
+
+**Purpose**: The Lead Researcher multi-agent pattern for work too large for one context window.
+
+**Key Features**:
+
+- **Four roles**: Lead Researcher, parallel Search Agents, Implementation Agents, adversarial Verifier.
+- **Closed questions**: subagents answer one bounded question and return findings with citations, never file dumps.
+- **Parallel reads, serial writes**: no two agents hold a write lock on the same file.
+- **Knows when not to fire**: one focused agent beats five vague ones.
+
+### 🏛️ architecture-baseline
+
+**Purpose**: The authoritative architecture reference for any agent entering a repository.
+
+**Key Features**:
+
+- **Ten standing design decisions** with their consequences, settled by ADR rather than re-litigated per task.
+- **Monorepo boundaries**: one-way dependency direction, services own their data.
+- **Definition of done** checklist.
+- **Templates included**: per-repo `CLAUDE.md` and `AGENTS.md` in `assets/`.
+
+## 📚 Domain Reference Skills
+
+Passive rule sets, loaded only when the work enters that domain. Each ends with a **Red Flags** section listing the patterns that should stop a review.
+
+| Skill | Loads when | Focus |
+| --- | --- | --- |
+| `react` | `.tsx`/`.jsx`, hooks, component tests | State ownership, effects, data fetching, a11y, RTL |
+| `vue` | `.vue`, composables, Pinia, Nuxt | `<script setup>`, `ref` over `reactive`, composable cleanup |
+| `javascript` | Framework-free `.js`/`.mjs` | ESM, safe DOM, event delegation, `AbortController` |
+| `css` | Stylesheets, `<style>`, design tokens | Strict BEM, mobile-first, custom-property theming |
+| `serverless-api` | Handlers, endpoints, queue consumers | Thin handlers, edge validation, error mapping, idempotency |
+| `php` | Any PHP (+ `symfony.md` companion) | PHP 8.x strict types, enums, readonly; Symfony DI, routing, Doctrine |
+| `postgres` | SQL, schema, indexes, migrations | Indexing, keyset pagination, expand/migrate/contract |
+| `aws` | SDK calls, credentials in app code | Never hardcode, least privilege, SDK v3, retries |
+| `cloud-infra` | IaC, IAM policies, CI pipelines | Least privilege, environment isolation, deploy safety |
+
+## 🛡️ Setup & Guardrails
+
+### 🔒 guardrails
+
+**Purpose**: Deterministic safety rails that do not depend on an AI choosing to obey them.
+
+**Key Features**:
+
+- **Two layers**: a `PreToolUse` Bash guard (agent-facing) and global git `pre-commit` / `pre-push` hooks (human and agent alike).
+- **Blocks**: destructive deletes, protected-branch commits and pushes, force-push without a lease, credential reads and commits, piping a download into a shell, ad-hoc `DROP`/`TRUNCATE`, deploys, repo-wide fan-out scripts.
+- **Delegates, never replaces**: re-runs each repo's own hooks (lefthook, husky, `.git/hooks`).
+- **Tested**: a 35-case suite ships in `assets/test/`.
+- **Honest about limits**: shell variables are not expanded, so it fails closed.
+
+### 📦 bootstrap-workspace
+
+**Purpose**: Restores the complete workspace — every skill, global rules, templates and both guardrail layers — onto a machine.
+
+**Key Features**:
+
+- **One command**: `install.sh`, with `--dry-run` to preview and `--git-hooks` to opt into the machine-wide git config change.
+- **Backs up before replacing**, and is idempotent.
+- **Self-verifying**: ends by running the guard test suite.
+- **This repo is the source of truth**; `~/.claude` is a working copy.
 
 ## 📦 Dependencies
 
