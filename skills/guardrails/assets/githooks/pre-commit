@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Global pre-commit. Deterministic rules that must not depend on an AI following them.
+set -euo pipefail
+. "$(dirname "$0")/_common.sh"
+
+BRANCH="$(current_branch)"
+
+# 1 — never commit on a protected branch
+if [[ "$BRANCH" =~ $PROTECTED_RE ]]; then
+  die "commit on protected branch '$BRANCH'" \
+      "Create a feature branch and commit there:" \
+      "  git switch -c <type>/<short-description>" \
+      "This rule has no override."
+fi
+
+# 2 — never commit a credential
+STAGED="$(git diff --cached --name-only --diff-filter=ACM || true)"
+if [ -n "$STAGED" ] && [ "${SKIP_SECRET_SCAN:-0}" != "1" ]; then
+  BADFILES="$(printf '%s\n' "$STAGED" | grep -Ei '(^|/)\.env(\.[A-Za-z0-9_.-]+)?$|\.(pem|p12|pfx|keystore|jks)$|(^|/)id_(rsa|dsa|ecdsa|ed25519)$|(^|/)\.pgpass$|(^|/)credentials$' || true)"
+  [ -n "$BADFILES" ] && die "credential file staged" "$BADFILES" \
+      "Add it to .gitignore and unstage it: git restore --staged <file>"
+
+  HITS="$(git diff --cached -U0 --diff-filter=ACM 2>/dev/null \
+    | grep -E '^\+' | grep -vE '^\+\+\+' \
+    | grep -Ein 'AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{20,}|xox[abposr]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9]{32,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.|(aws_secret_access_key|api[_-]?key|client[_-]?secret|private[_-]?key|passwd|password|token)["'"'"']?\s*[:=]\s*["'"'"'][^"'"'"'${}<>]{12,}' \
+    || true)"
+  if [ -n "$HITS" ]; then
+    red ""; red "Possible secret in the staged diff:"; printf '%s\n' "$HITS" | head -10 >&2
+    die "possible credential in staged changes" \
+        "Remove it and use Secrets Manager / SSM / an env var instead." \
+        "If this is a false positive: SKIP_SECRET_SCAN=1 git commit …"
+  fi
+fi
+
+# 3 — whatever the repo defines for itself
+delegate pre-commit
+
+# 4 — tests must pass
+run_tests precommit
+
+exit 0
