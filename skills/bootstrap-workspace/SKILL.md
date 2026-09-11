@@ -36,9 +36,10 @@ this repo wins — that is the point of having a restore point.
 | `architecture-baseline/assets/*.md` | `~/.claude/templates/` | per-repo `CLAUDE.md` / `AGENTS.md` starters |
 | `guardrails/assets/guard-bash.sh` + `test/` | `~/.claude/hooks/` | Layer 1 Bash guard |
 | `guardrails/assets/githooks/` | `~/.claude/githooks/` | Layer 2 git hooks |
+| `statusline/assets/statusline.sh` | `~/.claude/statusline.sh` | two-line status bar |
 
-It also wires the `PreToolUse` Bash hook into `~/.claude/settings.json` with `jq`,
-preserving any other hooks already configured there.
+It also wires the `PreToolUse` Bash hook and the `statusLine` command into
+`~/.claude/settings.json` with `jq`, preserving any other keys already configured there.
 
 ### Safety properties of the installer
 
