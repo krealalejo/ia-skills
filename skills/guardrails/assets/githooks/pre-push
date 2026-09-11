@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Global pre-push. Last mechanical line of defence before anything leaves the machine.
+set -euo pipefail
+. "$(dirname "$0")/_common.sh"
+
+# stdin: <local-ref> <local-sha> <remote-ref> <remote-sha>
+while read -r LREF LSHA RREF RSHA; do
+  [ -z "${RREF:-}" ] && continue
+  TARGET="${RREF#refs/heads/}"
+
+  if [[ "$TARGET" =~ $PROTECTED_RE ]]; then
+    die "push to protected branch '$TARGET'" \
+        "Pushing to $TARGET is forbidden. Push a feature branch and open the PR yourself:" \
+        "  git push -u origin <feature-branch>" \
+        "This rule has no override."
+  fi
+
+  # deleting a remote branch
+  if [ "$LSHA" = "0000000000000000000000000000000000000000" ]; then
+    die "remote branch deletion ($TARGET)" "Delete remote branches manually and deliberately."
+  fi
+done
+
+delegate pre-push
+run_tests prepush
+
+exit 0
