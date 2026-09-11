@@ -182,6 +182,17 @@ Passive rule sets, loaded only when the work enters that domain. Each ends with 
 - **Self-verifying**: ends by running the guard test suite.
 - **This repo is the source of truth**; `~/.claude` is a working copy.
 
+### 📊 statusline
+
+**Purpose**: A two-line Claude Code status bar that keeps model, context and quota usage permanently visible.
+
+**Key Features**:
+
+- **Line 1**: active model with its real context window size (`/1M` vs `/200k`), reasoning effort, fast mode, directory, and git branch — **red on `main`/`master`**.
+- **Line 2**: context usage bar, the 5-hour `session` window and the 7-day `week` window with time to reset, plus estimated cost and duration.
+- **Degrades, never lies**: `rate_limits` only exists for Pro/Max after the first API response, so absent segments disappear instead of rendering `0%`.
+- **Cheap**: one `jq` pass for every field, ~19 ms per render.
+
 ## 📦 Dependencies
 
 This repository depends on the following tools:

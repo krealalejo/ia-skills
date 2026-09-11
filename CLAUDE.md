@@ -98,6 +98,7 @@ Overlapping pairs, resolved: **`aws` vs `cloud-infra`** — `cloud-infra` is tem
 | --------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
 | `guardrails`          | `/guardrails`               | Bash guard + global git hooks. Blocks destructive commands, protected-branch writes, secret commits, failing tests. |
 | `bootstrap-workspace` | `/bootstrap-workspace`      | Restores the whole `~/.claude` workspace from this repo. `install.sh --dry-run` previews. |
+| `statusline`          | `/statusline`               | Two-line status bar: model, context window, 5-hour and 7-day usage, cost, git state. |
 
 ## README template
 

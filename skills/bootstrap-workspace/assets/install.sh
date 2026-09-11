@@ -57,29 +57,41 @@ run "cp '$G/githooks/'* '$DEST/githooks/'"
 run "chmod +x '$DEST/githooks/'*"
 say "Bash guard + git hooks copied"
 
+head_ "5. Status line"
+run "cp '$REPO/skills/statusline/assets/statusline.sh' '$DEST/statusline.sh'"
+run "chmod +x '$DEST/statusline.sh'"
+say "statusline.sh copied"
+
+head_ "6. settings.json"
 if command -v jq >/dev/null 2>&1; then
   SETTINGS="$DEST/settings.json"
   [ -f "$SETTINGS" ] || run "echo '{}' > '$SETTINGS'"
   backup "$SETTINGS"
   HOOK_CMD="$DEST/hooks/guard-bash.sh"
+  STATUS_CMD="$DEST/statusline.sh"
   if [ "$DRY" = 1 ]; then
     say "[dry-run] would wire PreToolUse:Bash -> $HOOK_CMD"
+    say "[dry-run] would wire statusLine -> $STATUS_CMD"
   else
-    jq --arg cmd "$HOOK_CMD" '
+    jq --arg cmd "$HOOK_CMD" --arg status "$STATUS_CMD" '
       .hooks //= {} |
       .hooks.PreToolUse //= [] |
       .hooks.PreToolUse |= (map(select(.matcher != "Bash")) +
-        [{matcher:"Bash", hooks:[{type:"command", command:$cmd, timeout:15}]}])
+        [{matcher:"Bash", hooks:[{type:"command", command:$cmd, timeout:15}]}]) |
+      .statusLine = {type:"command", command:$status, padding:0, refreshInterval:30}
     ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
     say "wired PreToolUse:Bash guard into settings.json"
+    say "wired statusLine into settings.json"
   fi
 else
   say "jq not found - add this to $DEST/settings.json by hand:"
   say '  "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks":'
-  say "    [ { \"type\": \"command\", \"command\": \"$DEST/hooks/guard-bash.sh\", \"timeout\": 15 } ] } ] }"
+  say "    [ { \"type\": \"command\", \"command\": \"$DEST/hooks/guard-bash.sh\", \"timeout\": 15 } ] } ] },"
+  say "  \"statusLine\": { \"type\": \"command\", \"command\": \"$DEST/statusline.sh\","
+  say '    "padding": 0, "refreshInterval": 30 }'
 fi
 
-head_ "5. Global git hooks"
+head_ "7. Global git hooks"
 if [ "$GIT_HOOKS" = 1 ]; then
   run "git config --global core.hooksPath '$DEST/githooks'"
   say "core.hooksPath -> $DEST/githooks"
@@ -89,7 +101,7 @@ else
   say "  git config --global core.hooksPath $DEST/githooks"
 fi
 
-head_ "6. Verify"
+head_ "8. Verify"
 if [ "$DRY" = 1 ]; then
   say "[dry-run] would run the guard test suite"
 else
