@@ -9,6 +9,20 @@ Deep context lives in `~/.claude/AGENTS.md` (architecture) and `~/.claude/skills
 
 ---
 
+## 0. Output rules (always apply)
+
+- **Answer in English.** Every reply, plan, commit message, PRD and summary is written
+  in English, regardless of the language the user writes in. The only exception is an
+  explicit in-session request to use another language, and it lasts only as long as the
+  user says so.
+- **No comments in code.** Do not add comments to code you write or edit — no
+  explanatory comments, no section banners, no TODO/FIXME notes, no JSDoc/docblocks
+  added for their own sake. Existing comments stay as they are unless the change makes
+  them wrong, and comments the user explicitly asks for are of course written.
+  Explain the code in the reply, not in the file.
+
+---
+
 ## 1. Stack baseline
 
 - **Language:** TypeScript (strict). PHP/Symfony and Ruby appear in isolated services only.
@@ -101,8 +115,8 @@ Silence in the PRD means "not now", not "use your judgement".
 - **Atomic commits.** One logical change each; must build and pass tests on its own.
   Conventional Commits: `type(scope): subject`, imperative, ≤300 chars total.
 - Run the repo formatter (`format:fix` or equivalent) on touched projects after editing.
-- Match surrounding code: its naming, its idioms, its comment density. No new patterns
-  without a reason stated in the plan.
+- Match surrounding code: its naming and its idioms. No new patterns without a reason
+  stated in the plan. Comments are governed by section 0 — do not add any.
 - Tests belong in the same commit as the behaviour they cover.
 - Report honestly: if tests fail, show the output; if you skipped a step, say so.
   Never claim verification you did not perform.
