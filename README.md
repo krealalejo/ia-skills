@@ -53,6 +53,17 @@ Two kinds of skill live here:
 - **Branch Summary**: Analyzes the full diff (`main...HEAD`) and synthesizes a single concise sentence.
 - **Fixed Format**: Commit message always follows `summary: <message>` (max 300 characters).
 
+### 🧑‍🏫 whiteboard-defense
+
+**Purpose**: Enforces the Whiteboard Defense standard — before a branch merges, the engineer must be able to explain and justify the system, not the agent.
+
+**Key Features**:
+
+- **Ask, never tell**: One question at a time, no answer revealed before the human answers, no hints and no coaching.
+- **Derived questions**: 5–7 questions (hard cap) built from the real diff and the PRD's Architecture section, across Choice / Flow / Failure / Trade / Blind spot.
+- **Graded against the code**: Every answer marked `matches` / `partial` / `gap` with `file:line` evidence from the diff.
+- **Gaps only**: Reports what you could not defend — appended to the PRD `## Log` when one exists. Zero gaps on a real branch means the questions were too soft.
+
 ### 🎭 playwright-web
 
 **Purpose**: Generates Playwright E2E tests for web UI flows and browser interactions.

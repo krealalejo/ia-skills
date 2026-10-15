@@ -65,6 +65,7 @@ metadata:
 | `release-commit`    | `/release-commit`                 | Creates empty summary commit (`summary: msg`) with plain-English description of all branch changes vs `main`.    |
 | `playwright-web`    | `/playwright-web [url] [flow]`    | Generates Playwright E2E tests for web UI flows and browser interactions.                                        |
 | `playwright-api`    | `/playwright-api [method] [path]` | Generates Playwright E2E tests for HTTP API endpoints using the request fixture.                                 |
+| `whiteboard-defense` | `/whiteboard [scope]`            | Quizzes the human on the branch before merge (5–7 questions), grades answers against the diff, reports gaps only. |
 
 ### Governance skills
 
