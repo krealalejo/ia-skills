@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate every skill in this repo: structure, frontmatter, and index coverage.
+"""Validate every skill and agent in this repo: structure, frontmatter, and index coverage.
 
 Usage:  python3 scripts/validate-skills.py
 Exit 0 if everything is valid, 1 otherwise.
@@ -10,7 +10,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SKILLS = ROOT / "skills"
+AGENTS = ROOT / "agents"
 REQUIRED_FM = ("name", "description", "license")
+REQUIRED_AGENT_FM = ("name", "description", "tools")
 
 
 def frontmatter(text):
@@ -80,12 +82,35 @@ def main():
         rows.append((d.name, len(text.splitlines()),
                      "cmd" if has_cmd else "ref", "; ".join(problems) or "ok"))
 
+    for f in sorted(AGENTS.glob("*.md")):
+        n = f.stem
+        problems = []
+        text = f.read_text()
+        fm = frontmatter(text)
+        if fm is None:
+            print(f"FAIL agent {n}: no YAML frontmatter")
+            failures += 1
+            continue
+        for field in REQUIRED_AGENT_FM:
+            if not fm.get(field):
+                problems.append(f"missing `{field}`")
+        if fm.get("name") != n:
+            problems.append(f"name '{fm.get('name')}' != file '{n}'")
+        if len(fm.get("description", "")) < 80:
+            problems.append("description too short to route on")
+        if f"`{n}`" not in claude_md:
+            problems.append("not listed in CLAUDE.md")
+        if n not in readme:
+            problems.append("not listed in README.md")
+        failures += bool(problems)
+        rows.append((n, len(text.splitlines()), "agnt", "; ".join(problems) or "ok"))
+
     w = max(len(r[0]) for r in rows)
-    print(f"{'skill':<{w}}  lines  kind  status")
+    print(f"{'name':<{w}}  lines  kind  status")
     for n, l, k, st in rows:
         mark = " " if st == "ok" else "!"
         print(f"{mark}{n:<{w}} {l:>5}  {k:<4}  {st}")
-    print(f"\n{len(rows) - failures}/{len(rows)} skills valid")
+    print(f"\n{len(rows) - failures}/{len(rows)} skills and agents valid")
     return 1 if failures else 0
 
 
