@@ -90,6 +90,7 @@ metadata:
 | `context-protocol`       | Context window reaches 60%                        | Document & Clear: session file, `/clear`, resume from the file. Ships the `SessionStart` resume hook. |
 | `agent-pipeline`         | Work too large for one context window             | Lead Researcher pattern: decompose, parallel search agents, synthesize, verify. Dispatches the subagents below. |
 | `architecture-baseline`  | Entering a repo, or a design decision needs a precedent | Ten standing decisions, monorepo boundaries, quality bar, definition of done.          |
+| `whiteboard-defense`     | `/whiteboard [scope]`, before opening a PR on agent-written work | The human gate that closes the pipeline: 5–7 questions on the branch, graded against the diff, gaps only. |
 
 ### Domain reference skills
 

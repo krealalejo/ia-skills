@@ -9,11 +9,11 @@ The source of truth for an agentic development setup on Claude Code: global rule
 | Layer | What | Where |
 | --- | --- | --- |
 | 01 Context | Global rules, architecture reference, PRD and repo templates | `skills/bootstrap-workspace/assets/`, `skills/prd-first/assets/`, `skills/architecture-baseline/assets/` |
-| 02 Skills | 27 skills: commands, governance, domain and AI engineering references | `skills/` |
+| 02 Skills | 28 skills: commands, governance, domain and AI engineering references | `skills/` |
 | 03 MCP | How to build servers agents can use | `mcp-server` skill |
 | 04 Subagents | Researcher, implementer, verifier, security reviewer, docs writer | `agents/` |
 | 05 Hooks | Bash guard, session resume, git hooks | `skills/guardrails/assets/`, `skills/context-protocol/assets/` |
-| 06 Pipelines | PRD → plan gate → research → implement → verify | `prd-first`, `plan-gate`, `agent-pipeline` |
+| 06 Pipelines | PRD → plan gate → research → implement → verify → human defense | `prd-first`, `plan-gate`, `agent-pipeline`, `whiteboard-defense` |
 | 07 CI | This repo validates itself on every PR | `.github/workflows/validate.yml` |
 | 08 API & Agent SDK | Rules for features and agents on Claude | `llm-apps` skill |
 | 09 Evals | Golden sets, judges, CI regressions, skill trigger evals | `llm-evals` skill |
@@ -65,6 +65,7 @@ Only want the skills? `npx skills add krealalejo/ia-skills` installs them throug
 | `context-protocol` | Context at 60% | Document & Clear to `docs/sessions/`, then resume; the `SessionStart` hook points the next session at the file |
 | `agent-pipeline` | Work too large for one context window | Lead Researcher pattern with the subagents below; parallel reads, serial writes, a fresh verifier |
 | `architecture-baseline` | Entering a repo, a design decision | Ten standing decisions, monorepo boundaries, definition of done; `CLAUDE.md` / `AGENTS.md` templates |
+| `whiteboard-defense` | `/whiteboard [scope]`, before a PR on agent-written work | You defend the branch, not the agent: one question at a time, no hints, graded against the diff with `file:line`, gaps only, appended to the PRD log |
 
 ### 📚 Domain reference skills
 

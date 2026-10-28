@@ -61,7 +61,9 @@ agent for a role that has a file.
          |
          |-> (5b) docs-writer updates the docs for the final diff
          |
-         `-> (6) Lead reports: what changed, what was left out, what is unverified
+         |-> (6) HUMAN DEFENSE: /whiteboard - the human explains the branch, graded against the diff
+         |
+         `-> (7) Lead reports: what changed, what was left out, what is unverified, the defense gaps
 ```
 
 ### Rules for the Lead
@@ -76,7 +78,8 @@ agent for a role that has a file.
    running. Never predict what it will say.
 5. **Verify the reports.** Subagents are confidently wrong sometimes. Spot-check any
    finding the plan depends on before building on it.
-6. **The approval gate at step 3 is not skippable** — see `plan-gate`.
+6. **The approval gate at step 3 is not skippable** — see `plan-gate`. Neither is the
+   defense at step 6: a branch nobody can explain does not get a PR — see `whiteboard-defense`.
 7. **Budget up front.** State how many agents and roughly what it costs before fanning
    out. More than ~10 agents needs an explicit go-ahead.
 8. **The Lead stays thin.** If the orchestrator is reading source files, it has become a
