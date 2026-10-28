@@ -63,6 +63,17 @@ def rm_targets(cmd):
     return out
 
 
+def guard_disabled_in_repo(cwd):
+    try:
+        r = subprocess.run(
+            ["git", "config", "--local", "--bool", "claude.guardBash"],
+            cwd=cwd, capture_output=True, text=True, timeout=5,
+        )
+        return r.stdout.strip() == "false"
+    except Exception:
+        return False
+
+
 # A heredoc body is usually DATA (written to a file), not code. Scanning it produces false
 # positives whenever the agent writes documentation about a forbidden command. Strip those
 # bodies before matching -- but keep them when the heredoc feeds an interpreter, which
@@ -121,6 +132,13 @@ def main():
     # Newlines separate commands just like `;` does. Normalising them keeps every
     # rule's `[^;&|]*` from spanning lines, and makes line-leading commands visible.
     cmd = strip_heredocs(cmd).replace("\n", " ; ")
+
+    if re.search(r"\bgit\b[^;&|]*\bconfig\b[^;&|]*\bclaude\.guardbash\b", cmd, re.I):
+        block("guard-toggle",
+              "Only the human decides whether this repo opts out of the Bash guard.",
+              "ask the user to run `git config --local claude.guardBash false` themselves.")
+    if guard_disabled_in_repo(cwd):
+        sys.exit(0)
 
     # ---- 1. Bypassing verification --------------------------------------------------
     if re.search(r"--no-verify|--no-gpg-sign\b", cmd):

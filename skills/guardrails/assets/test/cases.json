@@ -138,5 +138,17 @@
 [
 "block",
 "rm -rf /tmp/other"
+],
+[
+"block",
+"git config --local claude.guardBash false"
+],
+[
+"block",
+"git config claude.guardbash true"
+],
+[
+"allow",
+"git config --get user.email"
 ]
 ]

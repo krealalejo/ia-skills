@@ -8,7 +8,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: krealalejo
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -47,9 +47,15 @@ call and returns the reason to the agent.
 | `deploy` / `infra-destroy` | deploys and all infrastructure destroys |
 | `destructive-sql` | ad-hoc `DROP` / `TRUNCATE` / unbounded `DELETE` |
 | `repo-wide-script` | fan-out `npm run build/test/lint` with no workspace filter |
+| `guard-toggle` | the agent changing `claude.guardBash` in any git config |
 
 Allowed on purpose: deleting `node_modules`, pushing a feature branch, a lease-guarded
 force-push, a workspace-scoped build or test.
+
+**Per-repo opt-out, human only.** `git config --local claude.guardBash false` turns the
+Bash guard off for one repository (a sandbox, a scratch repo). The agent can never set or
+unset it: `guard-toggle` blocks that command even inside an opted-out repo. Layer 2 still
+applies there.
 
 **Heredoc bodies are data, not code** — writing documentation that mentions a forbidden
 command is fine. Bodies piped into an interpreter are still scanned.
@@ -107,7 +113,7 @@ at push gives the same protection with a far better inner loop.
 
 ### Change a rule, run the tests
 
-`assets/test/cases.json` holds 35 cases. Always add a matching **allow** case alongside a
+`assets/test/cases.json` holds 38 cases. Always add a matching **allow** case alongside a
 new block rule — the expensive failure mode of a guard is not a missed block, it is
 blocking legitimate work until someone switches the whole thing off.
 
