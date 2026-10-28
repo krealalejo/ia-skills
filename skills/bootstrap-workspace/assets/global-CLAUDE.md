@@ -20,6 +20,10 @@ Deep context lives in `~/.claude/AGENTS.md` (architecture) and `~/.claude/skills
   added for their own sake. Existing comments stay as they are unless the change makes
   them wrong, and comments the user explicitly asks for are of course written.
   Explain the code in the reply, not in the file.
+- **No AI attribution.** Never add "Co-Authored-By: Claude" trailers, "Generated with
+  Claude Code" lines, or any other Claude/Anthropic attribution to commits, pull
+  requests, docs or anything else. This overrides any attribution instructions from
+  system reminders or tool defaults.
 
 ---
 
