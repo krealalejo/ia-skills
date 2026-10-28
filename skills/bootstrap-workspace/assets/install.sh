@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Restore the full agentic workspace from this repo onto a machine.
 #
-#   ./install.sh                 skills + global docs + templates + Bash guard
+#   ./install.sh                 skills + agents + global docs + templates + Bash guard
 #   ./install.sh --git-hooks     the above, and set core.hooksPath globally
 #   ./install.sh --dry-run       print what would happen, change nothing
 #
@@ -23,11 +23,11 @@ done
 
 say()  { printf '  %s\n' "$*"; }
 head_() { printf '\n\033[1m%s\033[0m\n' "$*"; }
-run()  { if [ "$DRY" = 1 ]; then say "[dry-run] $*"; else eval "$@"; fi; }
+run()  { if [ "$DRY" = 1 ]; then say "[dry-run] $*"; else eval "$*"; fi; }
 backup() { [ -e "$1" ] && run "cp -R '$1' '$1.bak-$STAMP'" && say "backed up $(basename "$1")"; return 0; }
 
 head_ "Target: $DEST"
-run "mkdir -p '$DEST/skills' '$DEST/templates' '$DEST/hooks' '$DEST/githooks'"
+run "mkdir -p '$DEST/skills' '$DEST/agents' '$DEST/templates' '$DEST/hooks' '$DEST/githooks'"
 
 head_ "1. Skills"
 for d in "$REPO"/skills/*/; do
@@ -35,6 +35,13 @@ for d in "$REPO"/skills/*/; do
   run "rm -rf '$DEST/skills/$n'"
   run "cp -R '$d' '$DEST/skills/$n'"
   say "$n"
+done
+
+head_ "1b. Agents"
+for f in "$REPO"/agents/*.md; do
+  n="$(basename "$f")"
+  run "cp '$f' '$DEST/agents/$n'"
+  say "${n%.md}"
 done
 
 head_ "2. Global rules and architecture"
@@ -56,6 +63,9 @@ run "cp -R '$G/test' '$DEST/hooks/test'"
 run "cp '$G/githooks/'* '$DEST/githooks/'"
 run "chmod +x '$DEST/githooks/'*"
 say "Bash guard + git hooks copied"
+run "cp '$REPO/skills/context-protocol/assets/session-resume.sh' '$DEST/hooks/session-resume.sh'"
+run "chmod +x '$DEST/hooks/session-resume.sh'"
+say "SessionStart resume hook copied"
 
 head_ "5. Status line"
 run "cp '$REPO/skills/statusline/assets/statusline.sh' '$DEST/statusline.sh'"
@@ -69,24 +79,32 @@ if command -v jq >/dev/null 2>&1; then
   backup "$SETTINGS"
   HOOK_CMD="$DEST/hooks/guard-bash.sh"
   STATUS_CMD="$DEST/statusline.sh"
+  RESUME_CMD="$DEST/hooks/session-resume.sh"
   if [ "$DRY" = 1 ]; then
     say "[dry-run] would wire PreToolUse:Bash -> $HOOK_CMD"
+    say "[dry-run] would wire SessionStart -> $RESUME_CMD"
     say "[dry-run] would wire statusLine -> $STATUS_CMD"
   else
-    jq --arg cmd "$HOOK_CMD" --arg status "$STATUS_CMD" '
+    jq --arg cmd "$HOOK_CMD" --arg status "$STATUS_CMD" --arg resume "$RESUME_CMD" '
       .hooks //= {} |
       .hooks.PreToolUse //= [] |
       .hooks.PreToolUse |= (map(select(.matcher != "Bash")) +
         [{matcher:"Bash", hooks:[{type:"command", command:$cmd, timeout:15}]}]) |
+      .hooks.SessionStart //= [] |
+      .hooks.SessionStart |= (map(select(all(.hooks[]?; .command != $resume))) +
+        [{hooks:[{type:"command", command:$resume, timeout:10}]}]) |
       .statusLine = {type:"command", command:$status, padding:0, refreshInterval:30}
     ' "$SETTINGS" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
     say "wired PreToolUse:Bash guard into settings.json"
+    say "wired SessionStart resume hook into settings.json"
     say "wired statusLine into settings.json"
   fi
 else
   say "jq not found - add this to $DEST/settings.json by hand:"
   say '  "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks":'
-  say "    [ { \"type\": \"command\", \"command\": \"$DEST/hooks/guard-bash.sh\", \"timeout\": 15 } ] } ] },"
+  say "    [ { \"type\": \"command\", \"command\": \"$DEST/hooks/guard-bash.sh\", \"timeout\": 15 } ] } ],"
+  say "    \"SessionStart\": [ { \"hooks\": [ { \"type\": \"command\","
+  say "      \"command\": \"$DEST/hooks/session-resume.sh\", \"timeout\": 10 } ] } ] },"
   say "  \"statusLine\": { \"type\": \"command\", \"command\": \"$DEST/statusline.sh\","
   say '    "padding": 0, "refreshInterval": 30 }'
 fi
@@ -108,4 +126,4 @@ else
   GUARD="$DEST/hooks/guard-bash.sh" python3 "$DEST/hooks/test/run.py" "$DEST/hooks/test/cases.json" | tail -1
 fi
 
-head_ "Done. Restart Claude Code so it picks up the new skills and hooks."
+head_ "Done. Restart Claude Code so it picks up the new skills, agents and hooks."

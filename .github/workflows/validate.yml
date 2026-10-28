@@ -1,0 +1,54 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skills and agents
+        run: python3 scripts/validate-skills.py
+
+      - name: Bash guard suite
+        run: |
+          GUARD=skills/guardrails/assets/guard-bash.sh \
+            python3 skills/guardrails/assets/test/run.py skills/guardrails/assets/test/cases.json
+
+      - name: Shellcheck
+        run: |
+          shellcheck -S warning \
+            scripts/check-drift.sh \
+            skills/bootstrap-workspace/assets/install.sh \
+            skills/context-protocol/assets/session-resume.sh \
+            skills/statusline/assets/statusline.sh \
+            skills/guardrails/assets/githooks/pre-commit \
+            skills/guardrails/assets/githooks/pre-push
+          shellcheck -S warning -e SC2034 skills/guardrails/assets/githooks/_common.sh
+
+      - name: Install into a scratch config and check it matches the repo
+        env:
+          CLAUDE_CONFIG_DIR: ${{ runner.temp }}/claude
+        run: |
+          skills/bootstrap-workspace/assets/install.sh --dry-run > /dev/null
+          skills/bootstrap-workspace/assets/install.sh
+          scripts/check-drift.sh
+          jq -e '.hooks.PreToolUse and .hooks.SessionStart and .statusLine' "$CLAUDE_CONFIG_DIR/settings.json"
+
+      - name: Session resume hook
+        run: |
+          repo="$RUNNER_TEMP/resume"
+          mkdir -p "$repo/docs/sessions"
+          printf '# Smoke test\n' > "$repo/docs/sessions/2026-01-01-smoke.md"
+          out="$(printf '{"cwd":"%s"}' "$repo" | skills/context-protocol/assets/session-resume.sh)"
+          echo "$out"
+          grep -q 'docs/sessions/2026-01-01-smoke.md' <<< "$out"
+          test -z "$(printf '{"cwd":"%s"}' "$RUNNER_TEMP" | skills/context-protocol/assets/session-resume.sh)"

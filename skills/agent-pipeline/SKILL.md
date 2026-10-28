@@ -8,7 +8,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: krealalejo
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -28,12 +28,19 @@ Orchestration has real overhead — one focused agent beats five vague ones.
 
 ### Roles
 
-| Role | Count | Context | Job |
-|------|-------|---------|-----|
-| **Lead Researcher** | 1 | PRD + plan + synthesis only | Decompose, dispatch, synthesize, decide. Writes little or no code. |
-| **Search Agent** | N, parallel | Disposable | Answer one closed question. Read-only. Returns findings, never file dumps. |
-| **Implementation Agent** | 1-3 | Narrow | Write code for one bounded slice of the approved plan. |
-| **Verifier** | 1 | Fresh, adversarial | Try to break the result against the PRD. Never the agent that wrote it. |
+| Role | Count | Context | Subagent | Job |
+|------|-------|---------|----------|-----|
+| **Lead Researcher** | 1 | PRD + plan + synthesis only | the main session | Decompose, dispatch, synthesize, decide. Writes little or no code. |
+| **Search Agent** | N, parallel | Disposable | `pipeline-researcher` | Answer one closed question. Read-only. Returns findings, never file dumps. |
+| **Implementation Agent** | 1-3 | Narrow | `pipeline-implementer` | Write code for one bounded slice of the approved plan. |
+| **Verifier** | 1 | Fresh, adversarial | `pipeline-verifier` | Try to break the result against the PRD. Never the agent that wrote it. |
+| **Security Reviewer** | 0-1 | Fresh, adversarial | `security-reviewer` | Extra verifier when the change touches auth, user input, secrets, IaC or dependencies. |
+| **Docs Writer** | 0-1 | Narrow | `docs-writer` | Last slice: bring README, CLAUDE.md and the PRD log in line with the diff. |
+
+The subagent files live in this repo's `agents/` and install to `~/.claude/agents/`. Each one
+restricts its own tools: researchers and verifiers cannot edit, so the read-only guarantee is
+mechanical, not a promise in the prompt. Dispatch by name; never fall back to a general-purpose
+agent for a role that has a file.
 
 ### Flow
 
@@ -49,8 +56,14 @@ Orchestration has real overhead — one focused agent beats five vague ones.
          |       (parallel only if the file sets are disjoint - otherwise serial)
          |
          |-> (5) Verifier checks result vs PRD, adversarially
+         |       (+ security-reviewer in parallel when the change crosses a trust boundary)
+         |       verifier FAIL -> back to (4) with its findings, never "fix it yourself" in the Lead
          |
-         `-> (6) Lead reports: what changed, what was left out, what is unverified
+         |-> (5b) docs-writer updates the docs for the final diff
+         |
+         |-> (6) HUMAN DEFENSE: /whiteboard - the human explains the branch, graded against the diff
+         |
+         `-> (7) Lead reports: what changed, what was left out, what is unverified, the defense gaps
 ```
 
 ### Rules for the Lead
@@ -65,7 +78,8 @@ Orchestration has real overhead — one focused agent beats five vague ones.
    running. Never predict what it will say.
 5. **Verify the reports.** Subagents are confidently wrong sometimes. Spot-check any
    finding the plan depends on before building on it.
-6. **The approval gate at step 3 is not skippable** — see `plan-gate`.
+6. **The approval gate at step 3 is not skippable** — see `plan-gate`. Neither is the
+   defense at step 6: a branch nobody can explain does not get a PR — see `whiteboard-defense`.
 7. **Budget up front.** State how many agents and roughly what it costs before fanning
    out. More than ~10 agents needs an explicit go-ahead.
 8. **The Lead stays thin.** If the orchestrator is reading source files, it has become a
@@ -81,5 +95,5 @@ the case where it breaks. It reports failures, not approval.
 
 Orchestrating a task one agent could do · open-ended subagent prompts · the Lead reading
 source files · raw subagent output in the orchestrator's context · skipping the approval
-gate between synthesis and implementation · the author verifying their own work ·
+gate between synthesis and implementation · the author verifying their own work · a general-purpose agent doing a role that has its own subagent file ·
 claiming a result from an agent that has not reported · unbounded fan-out with no budget.

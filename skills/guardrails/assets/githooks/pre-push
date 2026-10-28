@@ -4,7 +4,7 @@ set -euo pipefail
 . "$(dirname "$0")/_common.sh"
 
 # stdin: <local-ref> <local-sha> <remote-ref> <remote-sha>
-while read -r LREF LSHA RREF RSHA; do
+while read -r _ LSHA RREF _; do
   [ -z "${RREF:-}" ] && continue
   TARGET="${RREF#refs/heads/}"
 

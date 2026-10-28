@@ -7,7 +7,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: krealalejo
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -52,11 +52,22 @@ right trade. 60% leaves enough room to write a good handoff instead of a panicke
   their raw output never lands in your context. The orchestrator holds conclusions.
 - The session file is disposable once the PRD Log is updated and the work is merged.
 
+### Resuming is automatic
+
+`assets/session-resume.sh` is a `SessionStart` hook, installed by `bootstrap-workspace`. On
+every new session, `/clear` and resume it looks for the newest `docs/sessions/*.md` in the
+repo (14 days by default, `SESSION_RESUME_MAX_AGE_DAYS` to change it) and tells the agent the
+file exists. It injects the path and title only, never the content: the agent decides whether
+the task continues that work. This is what makes a feature span several days without
+re-exploring the codebase each morning.
+
 ## Commands
 
 ```bash
 mkdir -p docs/sessions
 # Write docs/sessions/<YYYY-MM-DD>-<slug>.md, then /clear, then re-read it.
+
+echo '{"cwd":"'"$PWD"'"}' | ~/.claude/hooks/session-resume.sh
 ```
 
 ## Red Flags
