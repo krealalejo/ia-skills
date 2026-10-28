@@ -132,7 +132,14 @@ Silence in the PRD means "not now", not "use your judgement".
 ## 7. Domain knowledge is on-demand
 
 `~/.claude/skills/` holds the detailed rules, one directory per domain:
-`react/` · `vue/` · `javascript/` · `css/` · `serverless-api/` · `php/` · `postgres/` · `aws/` · `cloud-infra/`
+
+- **Code:** `react/` · `vue/` · `javascript/` · `css/` · `serverless-api/` · `php/` · `postgres/` · `aws/` · `cloud-infra/`
+- **AI engineering:** `mcp-server/` (building MCP servers) · `llm-apps/` (Claude API and
+  Agent SDK features, with the bundled `claude-api` skill for exact parameters) ·
+  `llm-evals/` (golden sets, judges, regression evals, skill trigger evals)
+
+Subagents for `/pipeline` live in `~/.claude/agents/`: `pipeline-researcher`,
+`pipeline-implementer`, `pipeline-verifier`, `security-reviewer`, `docs-writer`.
 
 Load a skill **only** when the work actually enters that domain — do not preload them.
 A skill may point to companion files in its own directory; read those on demand too.
