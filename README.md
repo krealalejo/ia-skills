@@ -1,149 +1,74 @@
-# 🧠 AI Skills Repository
+# 🧠 AI Workspace
 
-A curated collection of custom AI skills designed to enhance software engineering workflows, automation, and development best practices.
+The source of truth for an agentic development setup on Claude Code: global rules, skills, subagents, safety hooks, the status line, and the reference material for building MCP servers, LLM apps and evals. One installer restores all of it onto a machine.
 
-## 🚀 Included Skills
+**Stack:** Claude Code · Bash · Python 3 · jq · GitHub Actions
 
-Two kinds of skill live here:
+## 🗺️ What's inside, by layer
 
-- **Command skills** — invoked explicitly with a slash command (`/commit`, `/review`).
-- **Reference skills** — passive domain knowledge loaded on demand when the agent
-  enters that domain. No command; they simply apply when relevant.
+| Layer | What | Where |
+| --- | --- | --- |
+| 01 Context | Global rules, architecture reference, PRD and repo templates | `skills/bootstrap-workspace/assets/`, `skills/prd-first/assets/`, `skills/architecture-baseline/assets/` |
+| 02 Skills | 27 skills: commands, governance, domain and AI engineering references | `skills/` |
+| 03 MCP | How to build servers agents can use | `mcp-server` skill |
+| 04 Subagents | Researcher, implementer, verifier, security reviewer, docs writer | `agents/` |
+| 05 Hooks | Bash guard, session resume, git hooks | `skills/guardrails/assets/`, `skills/context-protocol/assets/` |
+| 06 Pipelines | PRD → plan gate → research → implement → verify | `prd-first`, `plan-gate`, `agent-pipeline` |
+| 07 CI | This repo validates itself on every PR | `.github/workflows/validate.yml` |
+| 08 API & Agent SDK | Rules for features and agents on Claude | `llm-apps` skill |
+| 09 Evals | Golden sets, judges, CI regressions, skill trigger evals | `llm-evals` skill |
 
-### ⚙️ Command Skills
+## 🚀 Quick Start
 
-### 🛠️ git-commit
+```bash
+git clone https://github.com/krealalejo/ia-skills.git
+cd ia-skills
+skills/bootstrap-workspace/assets/install.sh --dry-run
+skills/bootstrap-workspace/assets/install.sh
+```
 
-**Purpose**: Automates the creation of atomic commits following the [Conventional Commits](https://www.conventionalcommits.org/) standard.
+Restart Claude Code afterwards. The installer backs up every file it replaces, is idempotent, and ends by running the guard test suite. Add `--git-hooks` to also install the global git hooks (a machine-wide `core.hooksPath` change).
 
-**Key Features**:
+Only want the skills? `npx skills add krealalejo/ia-skills` installs them through [skills.sh](https://www.skills.sh), without agents, hooks or rules.
 
-- **Atomic Commits**: Automatically groups changes logically by module or functionality.
-- **Ticket Support**: Integrates ticket IDs (e.g., Jira, GitHub Issues) into the commit scope.
-- **Character Limit**: Ensures concise messages (max 300 characters).
+## 🧰 Commands
 
-### 🔍 code-review
+| Command | What it does |
+| --- | --- |
+| `skills/bootstrap-workspace/assets/install.sh [--dry-run] [--git-hooks]` | Restore the whole workspace into `~/.claude` (or `$CLAUDE_CONFIG_DIR`) |
+| `scripts/check-drift.sh` | List what differs between `~/.claude` and this repo; exits 1 on drift |
+| `python3 scripts/validate-skills.py` | Check every skill and agent: frontmatter, sections, listed in the docs |
+| `GUARD=skills/guardrails/assets/guard-bash.sh python3 skills/guardrails/assets/test/run.py skills/guardrails/assets/test/cases.json` | Run the 38-case Bash guard suite |
 
-**Purpose**: Performs a comprehensive code review of the current branch against `main`, focusing on TypeScript, best practices, and SOLID principles.
+## ⚙️ Skills
 
-**Key Features**:
+**Command skills** run on a slash command. **Reference skills** load on their own when the work enters their domain; their one-line description is the router.
 
-- **Automatic Diff**: Compares implementation with the `main` branch.
-- **In-Line Suggestions**: Adds comments directly above the code with problem descriptions and corrections.
-- **Clean Code & SOLID**: Enforces high-quality architectural standards.
+### Command skills
 
-### 🔷 typescript-review
+| Skill | Trigger | Purpose |
+| --- | --- | --- |
+| `git-commit` | `/commit [ticket-id]` | Atomic [Conventional Commits](https://www.conventionalcommits.org/), grouped by module, ticket id in the scope, max 300 chars |
+| `code-review` | `/review [task]` | Reviews the branch against `main` with inline Problem / Suggestion comments; TypeScript, clean code, SOLID |
+| `typescript-review` | `/typescript [file]` | Overloads, generics, type predicates, exhaustiveness with `never`, utility types |
+| `release-commit` | `/release-commit` | Empty `summary:` commit describing the whole branch in plain English |
+| `playwright-web` | `/playwright-web [url] [flow]` | E2E UI tests: researches `data-test-id` selectors and async anchors first |
+| `playwright-api` | `/playwright-api [method] [path]` | E2E API tests with the `request` fixture: 200, 401, 400/422, 404, teardown |
+| `add-readme` | `/add-readme [context]` | README from `assets/template.md`: stack, quick start, commands, Mermaid architecture |
 
-**Purpose**: Specialized review for TypeScript types and advanced patterns.
+### 🧭 Governance skills
 
-**Key Features**:
+| Skill | Loads when | Purpose |
+| --- | --- | --- |
+| `prd-first` | Any non-trivial task | Mission / In Scope / Out of Scope / Architecture; no code while `status: draft`; nothing outside In Scope gets built |
+| `plan-gate` | 3+ files, a dependency, data model, infra, cross-boundary rename | Six-part plan (goal, files, order, risk, rollback, verification) and explicit approval |
+| `context-protocol` | Context at 60% | Document & Clear to `docs/sessions/`, then resume; the `SessionStart` hook points the next session at the file |
+| `agent-pipeline` | Work too large for one context window | Lead Researcher pattern with the subagents below; parallel reads, serial writes, a fresh verifier |
+| `architecture-baseline` | Entering a repo, a design decision | Ten standing decisions, monorepo boundaries, definition of done; `CLAUDE.md` / `AGENTS.md` templates |
 
-- **Advanced Patterns**: Enforces function overloads, generics, type predicates, and mapped types.
-- **Exhaustiveness Checking**: Ensures all cases in unions are handled using the `never` type.
-- **Utility Types**: Promotes the use of `Pick`, `Omit`, `Record`, and other built-in utilities.
-- **Flexible Scope**: Supports individual file review or automatic detection via `git status`.
+### 📚 Domain reference skills
 
-### 🏷️ release-commit
-
-**Purpose**: Creates an empty summary commit with a plain-English description of all changes introduced in the current branch vs `main`.
-
-**Key Features**:
-
-- **Empty Commit**: No files staged or modified — purely a human-readable changelog entry.
-- **Branch Summary**: Analyzes the full diff (`main...HEAD`) and synthesizes a single concise sentence.
-- **Fixed Format**: Commit message always follows `summary: <message>` (max 300 characters).
-
-### 🎭 playwright-web
-
-**Purpose**: Generates Playwright E2E tests for web UI flows and browser interactions.
-
-**Key Features**:
-
-- **Pre-research phase**: Greps `data-test-id` selectors, reads unit tests and store files, identifies async timing anchors and lazy boundaries before writing any test.
-- **Conventions-first**: Enforces `gotoAppReady()`, `data-test-id` selectors, dynamic data (no hardcoded IDs), and proper auth state reuse.
-- **Context hints**: Accepts `unit-tests:`, `components:`, `known-selectors:`, `async-anchors:` to target research.
-- **Scenario coverage**: Scaffolds happy path + edge cases not already covered by unit tests.
-
-### 🔌 playwright-api
-
-**Purpose**: Generates Playwright E2E tests for HTTP API endpoints using the `request` fixture.
-
-**Key Features**:
-
-- **No `fetch`/`axios`**: Uses Playwright's `APIRequestContext` exclusively.
-- **Auth setup**: Token/cookie acquired in `beforeAll` and reused across tests.
-- **Scenario coverage**: 200 success, 401 unauthenticated, 400/422 validation, 404 not found.
-- **Teardown**: Cleans up created resources in `afterAll` when the endpoint supports DELETE.
-
-### 📝 add-readme
-
-**Purpose**: Creates or updates a README.md file following the `assets/template.md` structure.
-
-**Key Features**:
-
-- **Standardized Structure**: Enforces a consistent layout (Stack, Quick Start, Commands, Architecture) across all portfolio projects.
-- **Visual Excellence**: Includes support for Mermaid diagrams and architectural descriptions.
-
-## 🧭 Governance Skills
-
-How work is scoped, planned and handed off. These encode process, not syntax.
-
-### 📋 prd-first
-
-**Purpose**: Starts every non-trivial task from a lightweight PRD and forbids the agent from inventing features that are not in scope.
-
-**Key Features**:
-
-- **Four mandatory sections**: Mission, In Scope, Out of Scope, Architecture.
-- **Binding scope**: In Scope is exhaustive — a password-reset flow, caching or a new dependency that is not listed does not get built.
-- **Approval gate**: no code is written while `status: draft`.
-- **Template included**: `assets/PRD.md`.
-
-### 🚦 plan-gate
-
-**Purpose**: Forces a written plan and explicit approval before any change that crosses a risk threshold.
-
-**Key Features**:
-
-- **Clear threshold**: 3+ files, a dependency, a data model, infrastructure, or a cross-boundary rename.
-- **Six required parts**: goal, file list, order, risk, rollback, verification.
-- **Anti-gaming**: splitting one change into sub-threshold edits to dodge the gate is explicitly forbidden.
-
-### 🧠 context-protocol
-
-**Purpose**: The 60% Document & Clear protocol — dump progress to a session file, clear, resume from the file.
-
-**Key Features**:
-
-- **Beats auto-compaction**: a summary loses decisions; a session file keeps them.
-- **Structured handoff**: Done, In progress (file:line), Next steps, Decisions, Gotchas, Open questions.
-- **Deliberate timing**: act at 60%, not at 95% under pressure.
-
-### 🕸️ agent-pipeline
-
-**Purpose**: The Lead Researcher multi-agent pattern for work too large for one context window.
-
-**Key Features**:
-
-- **Four roles**: Lead Researcher, parallel Search Agents, Implementation Agents, adversarial Verifier.
-- **Closed questions**: subagents answer one bounded question and return findings with citations, never file dumps.
-- **Parallel reads, serial writes**: no two agents hold a write lock on the same file.
-- **Knows when not to fire**: one focused agent beats five vague ones.
-
-### 🏛️ architecture-baseline
-
-**Purpose**: The authoritative architecture reference for any agent entering a repository.
-
-**Key Features**:
-
-- **Ten standing design decisions** with their consequences, settled by ADR rather than re-litigated per task.
-- **Monorepo boundaries**: one-way dependency direction, services own their data.
-- **Definition of done** checklist.
-- **Templates included**: per-repo `CLAUDE.md` and `AGENTS.md` in `assets/`.
-
-## 📚 Domain Reference Skills
-
-Passive rule sets, loaded only when the work enters that domain. Each ends with a **Red Flags** section listing the patterns that should stop a review.
+Each ends with a **Red Flags** list of the patterns that should stop a review.
 
 | Skill | Loads when | Focus |
 | --- | --- | --- |
@@ -152,62 +77,78 @@ Passive rule sets, loaded only when the work enters that domain. Each ends with 
 | `javascript` | Framework-free `.js`/`.mjs` | ESM, safe DOM, event delegation, `AbortController` |
 | `css` | Stylesheets, `<style>`, design tokens | Strict BEM, mobile-first, custom-property theming |
 | `serverless-api` | Handlers, endpoints, queue consumers | Thin handlers, edge validation, error mapping, idempotency |
-| `php` | Any PHP (+ `symfony.md` companion) | PHP 8.x strict types, enums, readonly; Symfony DI, routing, Doctrine |
+| `php` | Any PHP (+ `symfony.md`) | PHP 8.x strict types, enums, readonly; Symfony DI, routing, Doctrine |
 | `postgres` | SQL, schema, indexes, migrations | Indexing, keyset pagination, expand/migrate/contract |
 | `aws` | SDK calls, credentials in app code | Never hardcode, least privilege, SDK v3, retries |
 | `cloud-infra` | IaC, IAM policies, CI pipelines | Least privilege, environment isolation, deploy safety |
 
-## 🛡️ Setup & Guardrails
+### 🤖 AI engineering skills
 
-### 🔒 guardrails
+| Skill | Loads when | Focus |
+| --- | --- | --- |
+| `mcp-server` | Building or reviewing an MCP server | Few whole-task tools, Zod inputs, side-effect annotations, actionable errors, stdio vs Streamable HTTP, no token passthrough |
+| `llm-apps` | Code on `@anthropic-ai/sdk` or the Claude Agent SDK | Simplest surface first, bounded Tool Runner loops, structured outputs, verified prompt caching, batch, untrusted input, cost logging |
+| `llm-evals` | A prompt, model or tool change; a new skill description | Golden datasets, calibrated LLM judges, CI regression slices, cost per run, trigger evals for skills |
 
-**Purpose**: Deterministic safety rails that do not depend on an AI choosing to obey them.
+`llm-apps` pairs with Claude Code's bundled `claude-api` skill: this repo holds the standing decisions, `claude-api` holds the current models and parameters.
 
-**Key Features**:
+### 🛡️ Setup skills
 
-- **Two layers**: a `PreToolUse` Bash guard (agent-facing) and global git `pre-commit` / `pre-push` hooks (human and agent alike).
-- **Blocks**: destructive deletes, protected-branch commits and pushes, force-push without a lease, credential reads and commits, piping a download into a shell, ad-hoc `DROP`/`TRUNCATE`, deploys, repo-wide fan-out scripts.
-- **Delegates, never replaces**: re-runs each repo's own hooks (lefthook, husky, `.git/hooks`).
-- **Tested**: a 35-case suite ships in `assets/test/`.
-- **Honest about limits**: shell variables are not expanded, so it fails closed.
+| Skill | Trigger | Purpose |
+| --- | --- | --- |
+| `guardrails` | `/guardrails` | Bash guard and global git hooks: destructive deletes, protected branches, force-push without lease, secrets, `curl \| sh`, `DROP`/`TRUNCATE`, deploys, repo-wide scripts. Delegates to each repo's own hooks |
+| `bootstrap-workspace` | `/bootstrap-workspace` | The installer and the drift check |
+| `statusline` | `/statusline` | Two lines: model and real context size, effort, branch (red on `main`); context bar, 5-hour and 7-day windows, cost |
 
-### 📦 bootstrap-workspace
+## 🕸️ Subagents
 
-**Purpose**: Restores the complete workspace — every skill, global rules, templates and both guardrail layers — onto a machine.
+Isolated contexts with restricted tools, in `agents/`. Read-only roles cannot edit by construction.
 
-**Key Features**:
+| Agent | Tools | Model | Role |
+| --- | --- | --- | --- |
+| `pipeline-researcher` | Read, Grep, Glob, Bash | sonnet | Answers one closed question, read-only, with `path:line` citations |
+| `pipeline-implementer` | Read, Edit, Write, Grep, Glob, Bash | opus | Builds one approved slice of the plan, touching only its files |
+| `pipeline-verifier` | Read, Grep, Glob, Bash | opus | Fresh adversarial check against the PRD; reports failures, never edits |
+| `security-reviewer` | Read, Grep, Glob, Bash | opus | Injection, access control, secrets, insecure IaC, LLM tool abuse; one exploit scenario per finding |
+| `docs-writer` | Read, Edit, Write, Grep, Glob, Bash | sonnet | Brings README, CLAUDE.md and PRD logs in line with the diff; edits markdown only |
 
-- **One command**: `install.sh`, with `--dry-run` to preview and `--git-hooks` to opt into the machine-wide git config change.
-- **Backs up before replacing**, and is idempotent.
-- **Self-verifying**: ends by running the guard test suite.
-- **This repo is the source of truth**; `~/.claude` is a working copy.
+## 🔒 Hooks
 
-### 📊 statusline
+| Hook | Event | Does |
+| --- | --- | --- |
+| Bash guard | `PreToolUse` (Bash) | Blocks the commands above before they run. A repo can opt out with `git config --local claude.guardBash false`, and only a human can set that |
+| Session resume | `SessionStart` | Tells a new or cleared session that `docs/sessions/<file>.md` exists, so work resumes from it instead of re-exploring |
+| Git hooks | `pre-commit`, `pre-push` | Same rules for humans and agents: protected branches, staged secrets, failing tests |
 
-**Purpose**: A two-line Claude Code status bar that keeps model, context and quota usage permanently visible.
+## 🏗️ Architecture
 
-**Key Features**:
+```mermaid
+flowchart LR
+  repo[ia-skills repo] -->|install.sh| home[~/.claude]
+  home --> rules[CLAUDE.md / AGENTS.md / templates]
+  home --> skills[skills/]
+  home --> agents[agents/]
+  home --> hooks[hooks/ + githooks/]
+  home --> settings[settings.json: PreToolUse, SessionStart, statusLine]
+  home -->|check-drift.sh| repo
+  ci[GitHub Actions] -->|validate, guard suite, shellcheck, scratch install| repo
+```
 
-- **Line 1**: active model with its real context window size (`/1M` vs `/200k`), reasoning effort, fast mode, directory, and git branch — **red on `main`/`master`**.
-- **Line 2**: context usage bar, the 5-hour `session` window and the 7-day `week` window with time to reset, plus estimated cost and duration.
-- **Degrades, never lies**: `rate_limits` only exists for Pro/Max after the first API response, so absent segments disappear instead of rendering `0%`.
-- **Cheap**: one `jq` pass for every field, ~19 ms per render.
+## 📁 Source layout
+
+```
+agents/                       subagents
+scripts/validate-skills.py    skill and agent validator
+scripts/check-drift.sh        ~/.claude vs repo
+skills/<name>/SKILL.md        one skill per folder
+skills/<name>/assets/         files the skill installs: templates, hooks, scripts
+.github/workflows/            CI for this repo
+```
 
 ## 📦 Dependencies
 
-This repository depends on the following tools:
-
-- **[RTK (AI Agent Tooling)](https://github.com/rtk-ai/rtk)**: The underlying framework used by the skills to interact with the environment (git, filesystem, etc.).
-
-## 🛠️ How to Use This Repository
-
-Install all skills via the [skills.sh](https://www.skills.sh) CLI:
-
-```bash
-npx skills add krealalejo/ia-skills
-```
-
-Or install manually by copying the desired skill folder into your local skills directory. Ensure the agent has the necessary permissions to execute the commands defined in the `SKILL.md` file.
+- **[RTK (AI Agent Tooling)](https://github.com/rtk-ai/rtk)**: used by the git skills to run git commands.
+- `bash`, `python3` and `jq` for the installer and hooks.
 
 ---
 
